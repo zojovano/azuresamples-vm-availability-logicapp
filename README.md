@@ -1,0 +1,1 @@
+# azuresamples-vm-availability-logicapp
