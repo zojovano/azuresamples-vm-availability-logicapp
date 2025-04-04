@@ -1,0 +1,20 @@
+{
+  "query": "healthresources
+| where type == 'microsoft.resourcehealth/resourceannotations'
+| where properties.targetResourceType == 'Microsoft.Compute/virtualMachines'
+| project name, resourceGroup, properties.reasonType, properties.reason, properties.annotationName, properties.impactType, properties.context, properties.occurredTime",
+  "subscriptions": [
+    "5f33a090-5b5b-43ff-a6dd-e912e60767ec"
+  ],
+  "options": {
+    "resultFormat": "table",
+    "top": 100
+  }
+}
+
+
+healthresources
+| where type == "microsoft.resourcehealth/resourceannotations"
+| where properties.targetResourceType == 'Microsoft.Compute/virtualMachines'
+| project name, resourceGroup, properties.targetResourceId, properties.reasonType, properties.reason, properties.annotationName, properties.impactType, properties.context, properties.occurredTime
+
