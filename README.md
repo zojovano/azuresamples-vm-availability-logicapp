@@ -2,6 +2,8 @@
 
 ## Summary
 
+Use LogicApp as an Alert action and decide whether to send a notification (e.g. e-mail) or not based on additional information (Azure Resource Health information in this case) when VM Availability metrics threshold is reached.
+
 ## Steps
 
 
