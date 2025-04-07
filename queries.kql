@@ -1,0 +1,5 @@
+healthresources
+| where type == "microsoft.resourcehealth/resourceannotations"
+| where properties.targetResourceType == 'Microsoft.Compute/virtualMachines'
+| project name, resourceGroup, properties.targetResourceId, properties.reasonType, properties.reason, properties.annotationName, properties.impactType, properties.context, properties.occurredTime
+

@@ -1,0 +1,311 @@
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "actions": {
+            "Call_Azure_Resource_Graph_Explorer": {
+                "type": "Http",
+                "inputs": {
+                    "uri": "https://management.azure.com/providers/Microsoft.ResourceGraph/resources?api-version=2021-03-01",
+                    "method": "POST",
+                    "headers": {
+                        "Content-Type": "application/json"
+                    },
+                    "body": {
+                        "query": "healthresources | where type == 'microsoft.resourcehealth/resourceannotations' | where properties.targetResourceType == 'Microsoft.Compute/virtualMachines' | project name, resourceGroup, properties.targetResourceId, properties.reasonType, properties.reason, properties.annotationName, properties.impactType, properties.context, properties.occurredTime",
+                        "subscriptions": [
+                            "5f33a090-5b5b-43ff-a6dd-e912e60767ec"
+                        ],
+                        "options": {
+                            "resultFormat": "table",
+                            "top": 100
+                        }
+                    },
+                    "authentication": {
+                        "type": "ManagedServiceIdentity"
+                    }
+                },
+                "runAfter": {},
+                "runtimeConfiguration": {
+                    "staticResult": {
+                        "name": "HTTP0",
+                        "staticResultOptions": "Disabled"
+                    }
+                }
+            },
+            "Parse_Resource_Graph_JSON_Response": {
+                "type": "ParseJson",
+                "inputs": {
+                    "content": "@body('Call_Azure_Resource_Graph_Explorer')",
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "totalRecords": {
+                                "type": "integer"
+                            },
+                            "count": {
+                                "type": "integer"
+                            },
+                            "data": {
+                                "type": "object",
+                                "properties": {
+                                    "columns": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "type": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "name",
+                                                "type"
+                                            ]
+                                        }
+                                    },
+                                    "rows": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "array"
+                                        }
+                                    }
+                                }
+                            },
+                            "facets": {
+                                "type": "array"
+                            },
+                            "resultTruncated": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "runAfter": {
+                    "Call_Azure_Resource_Graph_Explorer": [
+                        "SUCCEEDED"
+                    ]
+                }
+            },
+            "For_each": {
+                "type": "Foreach",
+                "foreach": "@outputs('Compose_Rows')",
+                "actions": {
+                    "Compose_Rows_and_Columns": {
+                        "type": "Compose",
+                        "inputs": {
+                            "name": "@{items('For_each')?[0]}",
+                            "resourceGroup": "@{items('For_each')?[1]}",
+                            "properties_targetResourceId": "@{items('For_each')?[2]}",
+                            "properties_reasonType": "@{items('For_each')?[3]}",
+                            "properties_reason": "@{items('For_each')?[4]}",
+                            "properties_annotationName": "@{items('For_each')?[5]}",
+                            "properties_impactType": "@{items('For_each')?[6]}",
+                            "properties_context": "@{items('For_each')?[7]}",
+                            "properties_occurredTime": "@{items('For_each')?[8]}"
+                        }
+                    },
+                    "Append_to_array_variable": {
+                        "type": "AppendToArrayVariable",
+                        "inputs": {
+                            "name": "TransformedRows",
+                            "value": "@outputs('Compose_Rows_and_Columns')"
+                        },
+                        "runAfter": {
+                            "Compose_Rows_and_Columns": [
+                                "SUCCEEDED"
+                            ]
+                        }
+                    }
+                },
+                "runAfter": {
+                    "Initialize_variable": [
+                        "SUCCEEDED"
+                    ]
+                }
+            },
+            "Initialize_variable": {
+                "type": "InitializeVariable",
+                "inputs": {
+                    "variables": [
+                        {
+                            "name": "ResourceHealth",
+                            "type": "string",
+                            "value": "empty"
+                        }
+                    ]
+                },
+                "runAfter": {
+                    "Initialize_Array": [
+                        "SUCCEEDED"
+                    ]
+                }
+            },
+            "Compose_Columns": {
+                "type": "Compose",
+                "inputs": "@body('Parse_Resource_Graph_JSON_Response')?['data']?['columns']",
+                "runAfter": {
+                    "Parse_Resource_Graph_JSON_Response": [
+                        "SUCCEEDED"
+                    ]
+                }
+            },
+            "Compose_Rows": {
+                "type": "Compose",
+                "inputs": "@body('Parse_Resource_Graph_JSON_Response')?['data']?['rows']",
+                "runAfter": {
+                    "Compose_Columns": [
+                        "SUCCEEDED"
+                    ]
+                }
+            },
+            "Initialize_Array": {
+                "type": "InitializeVariable",
+                "inputs": {
+                    "variables": [
+                        {
+                            "name": "TransformedRows",
+                            "type": "array",
+                            "value": []
+                        }
+                    ]
+                },
+                "runAfter": {
+                    "Compose_Rows": [
+                        "SUCCEEDED"
+                    ]
+                }
+            },
+            "Condition": {
+                "type": "If",
+                "expression": {
+                    "or": [
+                        {
+                            "equals": [
+                                "@variables('TransformedRows')[0]['properties_annotationName']",
+                                "VirtualMachineDeallocationInitiated"
+                            ]
+                        },
+                        {
+                            "equals": [
+                                "@variables('TransformedRows')[0]['properties_annotationName']",
+                                "VirtualMachineStartInitiatedByControlPlane"
+                            ]
+                        }
+                    ]
+                },
+                "actions": {},
+                "else": {
+                    "actions": {
+                        "Send_an_email_(V2)": {
+                            "type": "ApiConnection",
+                            "inputs": {
+                                "host": {
+                                    "connection": {
+                                        "referenceName": "office365"
+                                    }
+                                },
+                                "method": "post",
+                                "body": {
+                                    "To": "zoran.jovanovic@microsoft.com",
+                                    "Subject": "Test VM Alert",
+                                    "Body": "<p class=\"editor-paragraph\">Test VM Alert</p>",
+                                    "Importance": "Normal"
+                                },
+                                "path": "/v2/Mail"
+                            }
+                        }
+                    }
+                },
+                "runAfter": {
+                    "For_each": [
+                        "SUCCEEDED"
+                    ]
+                }
+            }
+        },
+        "contentVersion": "1.0.0.0",
+        "outputs": {},
+        "triggers": {
+            "When_a_HTTP_request_is_received": {
+                "type": "Request",
+                "kind": "Http",
+                "inputs": {
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "schemaId": {
+                                "type": "string"
+                            },
+                            "data": {
+                                "type": "object",
+                                "properties": {
+                                    "essentials": {
+                                        "type": "object",
+                                        "properties": {
+                                            "alertId": {
+                                                "type": "string"
+                                            },
+                                            "alertRule": {
+                                                "type": "string"
+                                            },
+                                            "severity": {
+                                                "type": "string"
+                                            },
+                                            "signalType": {
+                                                "type": "string"
+                                            },
+                                            "monitorCondition": {
+                                                "type": "string"
+                                            },
+                                            "monitoringService": {
+                                                "type": "string"
+                                            },
+                                            "alertTargetIDs": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "originAlertId": {
+                                                "type": "string"
+                                            },
+                                            "firedDateTime": {
+                                                "type": "string"
+                                            },
+                                            "resolvedDateTime": {
+                                                "type": "string"
+                                            },
+                                            "description": {
+                                                "type": "string"
+                                            },
+                                            "essentialsVersion": {
+                                                "type": "string"
+                                            },
+                                            "alertContextVersion": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "alertContext": {
+                                        "type": "object",
+                                        "properties": {}
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "operationOptions": "EnableSchemaValidation"
+            }
+        },
+        "staticResults": {
+            "HTTP0": {
+                "status": "Succeeded"
+            }
+        }
+    },
+    "kind": "Stateless"
+}
