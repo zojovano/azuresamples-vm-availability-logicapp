@@ -127,8 +127,10 @@ jobs:
     - name: Output Logic App Details
       if: (github.ref == 'refs/heads/main' && github.event_name == 'push') || (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply')
       run: |
-        echo "Logic App deployed successfully!"
+        echo "Logic App Standard deployed successfully!"
         echo "Resource Group: $(terraform output -raw resource_group_name)"
         echo "Logic App Name: $(terraform output -raw logic_app_name)"
         echo "Logic App ID: $(terraform output -raw logic_app_id)"
         echo "Managed Identity Principal ID: $(terraform output -raw managed_identity_principal_id)"
+        echo "Storage Account Name: $(terraform output -raw storage_account_name)"
+        echo "App Service Plan Name: $(terraform output -raw app_service_plan_name)"

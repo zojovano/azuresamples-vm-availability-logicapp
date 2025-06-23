@@ -56,8 +56,10 @@ The Terraform configuration deploys:
 - **Resource Group**: Contains all Logic App resources
 - **User-Assigned Managed Identity**: For secure access to Azure Resource Graph
 - **Role Assignment**: Reader permissions for the managed identity on the target subscription
+- **App Service Plan**: Dedicated hosting environment for Logic App Standard (WS1 SKU)
+- **Storage Account**: Required storage for Logic App Standard runtime and state
 - **Office 365 API Connection**: For sending email notifications
-- **Logic App Workflow**: The main workflow that processes VM availability alerts
+- **Logic App Standard**: The main workflow application with enhanced features and performance
 
 ### Configuration
 
