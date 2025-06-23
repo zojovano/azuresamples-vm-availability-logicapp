@@ -41,7 +41,17 @@ Use LogicApp as an Alert action and decide whether to send a notification (e.g. 
    terraform apply
    ```
 
-5. After deployment:
+   Or use the automated deployment script:
+   ```bash
+   ./deploy.sh
+   ```
+
+5. (Optional) Run the validation script to test your setup:
+   ```bash
+   ./validate.sh
+   ```
+
+6. After deployment:
    - Note the Logic App callback URL from the output
    - Configure your Azure Monitor alert to use the Logic App as an action
    - You'll need to authorize the Office 365 connection in the Azure portal
@@ -54,6 +64,18 @@ The Terraform deployment creates:
 - Office 365 API Connection
 - Managed Identity with Reader permissions for Azure Resource Graph
 - All necessary role assignments
+
+#### Cleanup
+
+To remove all deployed resources:
+```bash
+terraform destroy
+```
+
+Or use the automated cleanup script:
+```bash
+./cleanup.sh
+```
 
 ### Option 2: Manual Deployment
 

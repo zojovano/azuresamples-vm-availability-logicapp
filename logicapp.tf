@@ -15,14 +15,14 @@ resource "azurerm_api_connection" "office365" {
 locals {
   # Read the existing workflow definition
   original_workflow = jsondecode(file("${path.module}/logicapp.json"))
-  
+
   # Create modified workflow with parameterized values
   workflow_definition = {
     "$schema"      = local.original_workflow.definition["$schema"]
     contentVersion = local.original_workflow.definition.contentVersion
-    
+
     triggers = local.original_workflow.definition.triggers
-    
+
     actions = merge(
       local.original_workflow.definition.actions,
       {
@@ -43,7 +43,7 @@ locals {
             )
           }
         )
-        
+
         # Update the email action to use parameterized values
         Condition = merge(
           local.original_workflow.definition.actions.Condition,
@@ -77,8 +77,8 @@ locals {
         )
       }
     )
-    
-    outputs = local.original_workflow.definition.outputs
+
+    outputs       = local.original_workflow.definition.outputs
     staticResults = local.original_workflow.definition.staticResults
   }
 }
@@ -93,8 +93,8 @@ resource "azurerm_logic_app_workflow" "main" {
     type = "SystemAssigned"
   }
 
-  workflow_schema   = "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#"
-  workflow_version  = "1.0.0.0"
+  workflow_schema  = "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#"
+  workflow_version = "1.0.0.0"
 
   tags = var.tags
 }
@@ -108,18 +108,18 @@ resource "azurerm_resource_group_template_deployment" "logic_app_workflow" {
   template_content = jsonencode({
     "$schema"      = "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#"
     contentVersion = "1.0.0.0"
-    
+
     resources = [
       {
         type       = "Microsoft.Logic/workflows"
         apiVersion = "2019-05-01"
         name       = azurerm_logic_app_workflow.main.name
         location   = azurerm_logic_app_workflow.main.location
-        
+
         identity = {
           type = "SystemAssigned"
         }
-        
+
         properties = {
           definition = local.workflow_definition
         }
