@@ -39,6 +39,18 @@ variable "office365_connection_name" {
   default     = "office365-connection"
 }
 
+variable "app_service_plan_name" {
+  description = "Name of the App Service Plan for Logic App Standard"
+  type        = string
+  default     = "asp-vm-availability-logicapp"
+}
+
+variable "storage_account_name" {
+  description = "Name of the storage account for Logic App Standard"
+  type        = string
+  default     = "stavmavaillogicapp"
+}
+
 variable "notification_email" {
   description = "Email address for notifications"
   type        = string
