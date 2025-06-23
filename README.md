@@ -10,18 +10,32 @@ This repository includes a GitHub Action workflow that automatically deploys the
 
 ### Prerequisites
 
-1. **Azure Service Principal**: Create a service principal with appropriate permissions:
+1. **Azure App Registration with Federated Identity**: Create an App Registration with federated identity credentials for GitHub Actions:
    ```bash
-   az ad sp create-for-rbac --name "logic-app-deployment" --role "Contributor" --scopes "/subscriptions/YOUR_SUBSCRIPTION_ID"
+   # Create app registration
+   az ad app create --display-name "logic-app-deployment-oidc" --sign-in-audience AzureADMyOrg
+   
+   # Create service principal and assign roles
+   APP_ID=$(az ad app list --display-name "logic-app-deployment-oidc" --query "[0].appId" -o tsv)
+   az ad sp create --id $APP_ID
+   
+   # Configure federated identity for your repository
+   az ad app federated-credential create --id $APP_ID --parameters '{
+     "name": "github-actions-main",
+     "issuer": "https://token.actions.githubusercontent.com",
+     "subject": "repo:YOUR_GITHUB_USERNAME/azuresamples-vm-availability-logicapp:ref:refs/heads/main",
+     "audiences": ["api://AzureADTokenExchange"]
+   }'
    ```
 
 2. **GitHub Secrets**: Configure the following secrets in your GitHub repository:
-   - `AZURE_CLIENT_ID`: Service principal client ID
-   - `AZURE_CLIENT_SECRET`: Service principal client secret
+   - `AZURE_CLIENT_ID`: App Registration application ID
    - `AZURE_SUBSCRIPTION_ID`: Your Azure subscription ID
    - `AZURE_TENANT_ID`: Azure tenant ID (539d8bb1-bbd5-4f9d-836d-223c3e6d1e43)
    - `AZURE_TARGET_SUBSCRIPTION_ID`: Subscription ID to monitor for VM availability (can be the same as AZURE_SUBSCRIPTION_ID)
    - `NOTIFICATION_EMAIL`: Email address for alert notifications
+
+   **Note**: With federated identity, you no longer need `AZURE_CLIENT_SECRET`, enhancing security.
 
 ### Deployment Options
 
