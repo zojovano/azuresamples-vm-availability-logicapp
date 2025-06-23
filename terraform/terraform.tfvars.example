@@ -1,0 +1,27 @@
+# Example terraform.tfvars file
+# Copy this file to terraform.tfvars and update the values
+
+# Azure Configuration
+subscription_id = "your-subscription-id-here"
+tenant_id       = "539d8bb1-bbd5-4f9d-836d-223c3e6d1e43"
+
+# Resource Configuration
+resource_group_name = "rg-vm-availability-logicapp"
+location            = "East US"
+logic_app_name      = "la-vm-availability-monitor"
+
+# Monitoring Configuration
+target_subscription_id = "your-target-subscription-id-to-monitor"
+notification_email     = "your-email@domain.com"
+
+# Optional: Custom naming
+managed_identity_name     = "mi-vm-availability-logicapp"
+office365_connection_name = "office365-connection"
+
+# Tags
+tags = {
+  Environment = "demo"
+  Project     = "vm-availability-monitoring"
+  ManagedBy   = "terraform"
+  Owner       = "your-name"
+}
