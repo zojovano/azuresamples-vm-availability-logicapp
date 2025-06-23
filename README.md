@@ -4,6 +4,61 @@
 
 Use LogicApp as an Alert action and decide whether to send a notification (e.g. e-mail) or not based on additional information (Azure Resource Health information in this case) when VM Availability metrics threshold is reached.
 
+## Deployment Options
+
+### Option 1: Terraform Deployment (Recommended)
+
+#### Prerequisites
+
+- [Terraform](https://www.terraform.io/downloads.html) installed
+- Azure CLI installed and logged in (`az login`)
+- Appropriate Azure permissions to create Logic Apps, API Connections, and Role Assignments
+
+#### Steps
+
+1. Clone this repository:
+   ```bash
+   git clone <repository-url>
+   cd azuresamples-vm-availability-logicapp
+   ```
+
+2. Copy the example variables file and customize it:
+   ```bash
+   cp terraform.tfvars.example terraform.tfvars
+   ```
+
+3. Edit `terraform.tfvars` with your values:
+   ```hcl
+   subscription_id = "your-subscription-id"
+   email_recipient = "your-email@example.com"
+   location        = "East US"
+   ```
+
+4. Initialize and deploy with Terraform:
+   ```bash
+   terraform init
+   terraform plan
+   terraform apply
+   ```
+
+5. After deployment:
+   - Note the Logic App callback URL from the output
+   - Configure your Azure Monitor alert to use the Logic App as an action
+   - You'll need to authorize the Office 365 connection in the Azure portal
+
+#### Terraform Configuration
+
+The Terraform deployment creates:
+- Resource Group
+- Logic App (Consumption tier) with the workflow from `logicapp.json`
+- Office 365 API Connection
+- Managed Identity with Reader permissions for Azure Resource Graph
+- All necessary role assignments
+
+### Option 2: Manual Deployment
+
+For manual deployment, follow the original steps below and use the workflow definition in [logicapp.json](logicapp.json).
+
 ## Steps
 
 

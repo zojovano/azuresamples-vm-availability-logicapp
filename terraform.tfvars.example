@@ -1,0 +1,20 @@
+# Example values for variables
+# Copy this file to terraform.tfvars and customize the values
+
+resource_group_name = "rg-vm-availability-logicapp"
+location           = "East US"
+logic_app_name     = "la-vm-availability-monitor"
+
+# Replace with your actual subscription ID
+subscription_id = "00000000-0000-0000-0000-000000000000"
+
+# Replace with your email address
+email_recipient = "your-email@example.com"
+
+office365_connection_name = "office365"
+
+tags = {
+  Environment = "Demo"
+  Purpose     = "VM Availability Monitoring"
+  Owner       = "Your Name"
+}
