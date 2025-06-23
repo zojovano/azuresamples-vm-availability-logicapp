@@ -12,24 +12,63 @@ The GitHub Actions workflow automates the deployment of:
 
 ## Prerequisites
 
-### 1. Azure Service Principal Setup
+### 1. Azure App Registration and Federated Identity Setup
 
-Create a service principal with the necessary permissions:
+Create an App Registration with federated identity for secure GitHub Actions authentication:
 
 ```bash
+# Create app registration
+az ad app create \
+  --display-name "logic-app-deployment-oidc" \
+  --sign-in-audience AzureADMyOrg
+
+# Get the application ID
+APP_ID=$(az ad app list --display-name "logic-app-deployment-oidc" --query "[0].appId" -o tsv)
+
 # Create service principal
-az ad sp create-for-rbac \
-  --name "logic-app-deployment-sp" \
+az ad sp create --id $APP_ID
+
+# Get the service principal object ID
+SP_OBJECT_ID=$(az ad sp list --display-name "logic-app-deployment-oidc" --query "[0].id" -o tsv)
+
+# Assign roles to the service principal
+az role assignment create \
+  --assignee $SP_OBJECT_ID \
   --role "Contributor" \
-  --scopes "/subscriptions/YOUR_SUBSCRIPTION_ID" \
-  --sdk-auth
+  --scope "/subscriptions/YOUR_SUBSCRIPTION_ID"
 
 # Additional role assignment for managed identity operations
 az role assignment create \
-  --assignee YOUR_SP_OBJECT_ID \
+  --assignee $SP_OBJECT_ID \
   --role "User Access Administrator" \
   --scope "/subscriptions/YOUR_SUBSCRIPTION_ID"
+
+# Configure federated identity for GitHub Actions
+az ad app federated-credential create \
+  --id $APP_ID \
+  --parameters '{
+    "name": "github-actions-main",
+    "issuer": "https://token.actions.githubusercontent.com",
+    "subject": "repo:YOUR_GITHUB_USERNAME/azuresamples-vm-availability-logicapp:ref:refs/heads/main",
+    "description": "GitHub Actions Main Branch",
+    "audiences": ["api://AzureADTokenExchange"]
+  }'
+
+# Optional: Add federated credential for pull requests
+az ad app federated-credential create \
+  --id $APP_ID \
+  --parameters '{
+    "name": "github-actions-pr",
+    "issuer": "https://token.actions.githubusercontent.com",
+    "subject": "repo:YOUR_GITHUB_USERNAME/azuresamples-vm-availability-logicapp:pull_request",
+    "description": "GitHub Actions Pull Requests",
+    "audiences": ["api://AzureADTokenExchange"]
+  }'
+
+echo "App ID (use as AZURE_CLIENT_ID): $APP_ID"
 ```
+
+**Important**: Replace `YOUR_GITHUB_USERNAME` with your actual GitHub username and `YOUR_SUBSCRIPTION_ID` with your Azure subscription ID.
 
 ### 2. Required GitHub Secrets
 
@@ -37,12 +76,13 @@ Configure these secrets in your GitHub repository (Settings → Secrets and vari
 
 | Secret Name | Description | Example |
 |-------------|-------------|---------|
-| `AZURE_CLIENT_ID` | Service principal application ID | `12345678-1234-1234-1234-123456789012` |
-| `AZURE_CLIENT_SECRET` | Service principal password | `your-secret-value` |
+| `AZURE_CLIENT_ID` | App Registration application ID | `12345678-1234-1234-1234-123456789012` |
 | `AZURE_SUBSCRIPTION_ID` | Target Azure subscription ID | `87654321-4321-4321-4321-210987654321` |
 | `AZURE_TENANT_ID` | Azure tenant ID | `539d8bb1-bbd5-4f9d-836d-223c3e6d1e43` |
 | `AZURE_TARGET_SUBSCRIPTION_ID` | Subscription to monitor for VM alerts | Same as AZURE_SUBSCRIPTION_ID or different |
 | `NOTIFICATION_EMAIL` | Email for alert notifications | `admin@yourcompany.com` |
+
+**Note**: With federated identity, you no longer need to store the `AZURE_CLIENT_SECRET` as a GitHub secret, enhancing security by eliminating long-lived credentials.
 
 ### 3. Office 365 Connection Authorization
 
@@ -128,7 +168,10 @@ View detailed logs in GitHub Actions:
 ### Common Issues
 
 **Issue**: `Error: Insufficient privileges to complete the operation`
-**Solution**: Ensure the service principal has both "Contributor" and "User Access Administrator" roles
+**Solution**: Ensure the App Registration service principal has both "Contributor" and "User Access Administrator" roles
+
+**Issue**: `Error: AADSTS70021: No matching federated identity record found`
+**Solution**: Verify that the federated identity credentials are configured correctly for your GitHub repository and branch
 
 **Issue**: `Error: Office 365 connection not authorized`
 **Solution**: Manually authorize the Office 365 connection in Azure Portal (see step 3 in Prerequisites)
@@ -145,10 +188,11 @@ The workflow uses local state. For production use, consider:
 
 ## Security Considerations
 
-1. **Secrets Management**: All sensitive values are stored as GitHub secrets
-2. **Least Privilege**: Service principal has minimal required permissions
-3. **Managed Identity**: Logic App uses managed identity for Azure API access
-4. **Environment Protection**: Production environment can require approvals
+1. **Federated Identity**: Uses OpenID Connect (OIDC) for secure authentication without long-lived secrets
+2. **Secrets Management**: Minimal sensitive values stored as GitHub secrets (no client secrets required)
+3. **Least Privilege**: App Registration service principal has minimal required permissions
+4. **Managed Identity**: Logic App uses managed identity for Azure API access
+5. **Environment Protection**: Production environment can require approvals
 
 ## Next Steps
 
