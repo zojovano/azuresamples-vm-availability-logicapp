@@ -40,7 +40,7 @@ variable "office365_connection_name" {
 }
 
 variable "app_service_plan_name" {
-  description = "Name of the App Service Plan for Logic App Standard"
+  description = "Name of the WorkflowStandard Plan for Logic App Standard"
   type        = string
   default     = "asp-vm-availability-logicapp"
 }

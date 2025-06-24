@@ -30,6 +30,6 @@ output "storage_account_name" {
 }
 
 output "app_service_plan_name" {
-  description = "App Service Plan name for Logic App Standard"
+  description = "WorkflowStandard Plan name for Logic App Standard"
   value       = azurerm_service_plan.logic_app.name
 }

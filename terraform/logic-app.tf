@@ -23,13 +23,13 @@ resource "azurerm_api_connection" "office365" {
   tags = var.tags
 }
 
-# App Service Plan for Logic App Standard
+# WorkflowStandard Plan for Logic App Standard
 resource "azurerm_service_plan" "logic_app" {
   name                = var.app_service_plan_name
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
   os_type             = "Windows"
-  sku_name            = "S1"
+  sku_name            = "WS1"
 
   tags = var.tags
 }
