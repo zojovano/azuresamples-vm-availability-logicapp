@@ -67,9 +67,9 @@ resource "local_file" "workflow_json" {
 data "archive_file" "workflows" {
   type        = "zip"
   output_path = "${path.module}/workflows.zip"
-  
+
   source_dir = "${path.module}/temp_workflows"
-  
+
   depends_on = [
     local_file.host_json,
     local_file.connections_json,
@@ -83,7 +83,7 @@ resource "azapi_resource_action" "deploy_workflows_zip" {
   resource_id = azurerm_logic_app_standard.main.id
   action      = "extensions/zipdeploy"
   method      = "POST"
-  
+
   body = filebase64(data.archive_file.workflows.output_path)
 
   depends_on = [
