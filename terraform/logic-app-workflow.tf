@@ -77,17 +77,3 @@ data "archive_file" "workflows" {
   ]
 }
 
-# Deploy the workflow zip file to Logic App Standard
-resource "azapi_resource_action" "deploy_workflows_zip" {
-  type        = "Microsoft.Web/sites@2022-03-01"
-  resource_id = azurerm_logic_app_standard.main.id
-  action      = "extensions/zipdeploy"
-  method      = "POST"
-
-  body = filebase64(data.archive_file.workflows.output_path)
-
-  depends_on = [
-    azurerm_logic_app_standard.main,
-    data.archive_file.workflows
-  ]
-}
