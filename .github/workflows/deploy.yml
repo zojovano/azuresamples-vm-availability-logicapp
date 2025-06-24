@@ -161,7 +161,6 @@ jobs:
         echo "Resource Group: $RESOURCE_GROUP"
         echo "Logic App Name: $LOGIC_APP_NAME"
         
-        az login --identity
         az logicapp workflow create \
           --resource-group "$RESOURCE_GROUP" \
           --logic-app-name "$LOGIC_APP_NAME" \
