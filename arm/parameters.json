@@ -1,0 +1,27 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "connections_office365_1_name": {
+            "value": null
+        },
+        "connections_office365_connection_name": {
+            "value": null
+        },
+        "sites_la_vm_availability_monitor_name": {
+            "value": null
+        },
+        "serverfarms_asp_vm_availability_logicapp_name": {
+            "value": null
+        },
+        "storageAccounts_stavmavaillogicapp38gd40_name": {
+            "value": null
+        },
+        "metricAlerts_stavmavaillogicapp38gd40_AvailabilityAlert_name": {
+            "value": null
+        },
+        "userAssignedIdentities_mi_vm_availability_logicapp_name": {
+            "value": null
+        }
+    }
+}

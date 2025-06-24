@@ -1,0 +1,658 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "connections_office365_1_name": {
+            "defaultValue": "office365-1",
+            "type": "String"
+        },
+        "connections_office365_connection_name": {
+            "defaultValue": "office365-connection",
+            "type": "String"
+        },
+        "sites_la_vm_availability_monitor_name": {
+            "defaultValue": "la-vm-availability-monitor",
+            "type": "String"
+        },
+        "serverfarms_asp_vm_availability_logicapp_name": {
+            "defaultValue": "asp-vm-availability-logicapp",
+            "type": "String"
+        },
+        "storageAccounts_stavmavaillogicapp38gd40_name": {
+            "defaultValue": "stavmavaillogicapp38gd40",
+            "type": "String"
+        },
+        "metricAlerts_stavmavaillogicapp38gd40_AvailabilityAlert_name": {
+            "defaultValue": "stavmavaillogicapp38gd40-AvailabilityAlert",
+            "type": "String"
+        },
+        "userAssignedIdentities_mi_vm_availability_logicapp_name": {
+            "defaultValue": "mi-vm-availability-logicapp",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+            "apiVersion": "2025-01-31-preview",
+            "name": "[parameters('userAssignedIdentities_mi_vm_availability_logicapp_name')]",
+            "location": "swedencentral",
+            "tags": {
+                "Environment": "demo",
+                "ManagedBy": "terraform",
+                "Project": "vm-availability-monitoring"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2024-01-01",
+            "name": "[parameters('storageAccounts_stavmavaillogicapp38gd40_name')]",
+            "location": "swedencentral",
+            "tags": {
+                "Environment": "demo",
+                "ManagedBy": "terraform",
+                "Project": "vm-availability-monitoring"
+            },
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "kind": "StorageV2",
+            "identity": {
+                "type": "None"
+            },
+            "properties": {
+                "dnsEndpointType": "Standard",
+                "defaultToOAuthAuthentication": false,
+                "publicNetworkAccess": "Enabled",
+                "allowCrossTenantReplication": true,
+                "isNfsV3Enabled": false,
+                "isLocalUserEnabled": true,
+                "isSftpEnabled": false,
+                "minimumTlsVersion": "TLS1_2",
+                "allowBlobPublicAccess": true,
+                "allowSharedKeyAccess": true,
+                "isHnsEnabled": false,
+                "networkAcls": {
+                    "resourceAccessRules": [],
+                    "bypass": "AzureServices",
+                    "virtualNetworkRules": [],
+                    "ipRules": [],
+                    "defaultAction": "Allow"
+                },
+                "supportsHttpsTrafficOnly": true,
+                "encryption": {
+                    "services": {
+                        "file": {
+                            "keyType": "Account",
+                            "enabled": true
+                        },
+                        "blob": {
+                            "keyType": "Account",
+                            "enabled": true
+                        }
+                    },
+                    "keySource": "Microsoft.Storage"
+                },
+                "accessTier": "Hot"
+            }
+        },
+        {
+            "type": "Microsoft.Web/connections",
+            "apiVersion": "2016-06-01",
+            "name": "[parameters('connections_office365_1_name')]",
+            "location": "swedencentral",
+            "kind": "V2",
+            "properties": {
+                "displayName": "zojovano@microsoft.com",
+                "statuses": [
+                    {
+                        "status": "Connected"
+                    }
+                ],
+                "customParameterValues": {},
+                "nonSecretParameterValues": {},
+                "createdTime": "2025-06-24T12:16:18.0140022Z",
+                "changedTime": "2025-06-24T12:16:32.9853019Z",
+                "api": {
+                    "name": "office365",
+                    "displayName": "Office 365 Outlook",
+                    "description": "Microsoft Office 365 is a cloud-based service that is designed to help meet your organization's needs for robust security, reliability, and user productivity.",
+                    "iconUri": "https://conn-afd-prod-endpoint-bmc9bqahasf3grgk.b01.azurefd.net/v1.0.1757/1.0.1757.4253/office365/icon.png",
+                    "brandColor": "#0078D4",
+                    "id": "/subscriptions/5f33a090-5b5b-43ff-a6dd-e912e60767ec/providers/Microsoft.Web/locations/swedencentral/managedApis/office365",
+                    "type": "Microsoft.Web/locations/managedApis"
+                },
+                "testLinks": [
+                    {
+                        "requestUri": "[concat('https://management.azure.com:443/subscriptions/5f33a090-5b5b-43ff-a6dd-e912e60767ec/resourceGroups/rg-vm-availability-logicapp/providers/Microsoft.Web/connections/', parameters('connections_office365_1_name'), '/extensions/proxy/testconnection?api-version=2016-06-01')]",
+                        "method": "get"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Web/connections",
+            "apiVersion": "2016-06-01",
+            "name": "[parameters('connections_office365_connection_name')]",
+            "location": "swedencentral",
+            "tags": {
+                "Environment": "demo",
+                "ManagedBy": "terraform",
+                "Project": "vm-availability-monitoring"
+            },
+            "kind": "V1",
+            "properties": {
+                "displayName": "Office365Outlook",
+                "statuses": [
+                    {
+                        "status": "Connected"
+                    }
+                ],
+                "customParameterValues": {},
+                "nonSecretParameterValues": {},
+                "createdTime": "2025-06-24T11:50:31.4324653Z",
+                "changedTime": "2025-06-24T12:10:00.1237294Z",
+                "api": {
+                    "name": "office365",
+                    "displayName": "Office 365 Outlook",
+                    "description": "Microsoft Office 365 is a cloud-based service that is designed to help meet your organization's needs for robust security, reliability, and user productivity.",
+                    "iconUri": "https://conn-afd-prod-endpoint-bmc9bqahasf3grgk.b01.azurefd.net/v1.0.1757/1.0.1757.4253/office365/icon.png",
+                    "brandColor": "#0078D4",
+                    "id": "/subscriptions/5f33a090-5b5b-43ff-a6dd-e912e60767ec/providers/Microsoft.Web/locations/swedencentral/managedApis/office365",
+                    "type": "Microsoft.Web/locations/managedApis"
+                },
+                "testLinks": [
+                    {
+                        "requestUri": "[concat('https://management.azure.com:443/subscriptions/5f33a090-5b5b-43ff-a6dd-e912e60767ec/resourceGroups/rg-vm-availability-logicapp/providers/Microsoft.Web/connections/', parameters('connections_office365_connection_name'), '/extensions/proxy/testconnection?api-version=2016-06-01')]",
+                        "method": "get"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2024-04-01",
+            "name": "[parameters('serverfarms_asp_vm_availability_logicapp_name')]",
+            "location": "Sweden Central",
+            "tags": {
+                "Environment": "demo",
+                "ManagedBy": "terraform",
+                "Project": "vm-availability-monitoring"
+            },
+            "sku": {
+                "name": "WS1",
+                "tier": "WorkflowStandard",
+                "size": "WS1",
+                "family": "WS",
+                "capacity": 1
+            },
+            "kind": "elastic",
+            "properties": {
+                "perSiteScaling": false,
+                "elasticScaleEnabled": true,
+                "maximumElasticWorkerCount": 1,
+                "isSpot": false,
+                "reserved": false,
+                "isXenon": false,
+                "hyperV": false,
+                "targetWorkerCount": 0,
+                "targetWorkerSizeId": 0,
+                "zoneRedundant": false
+            }
+        },
+        {
+            "type": "Microsoft.Insights/metricAlerts",
+            "apiVersion": "2018-03-01",
+            "name": "[parameters('metricAlerts_stavmavaillogicapp38gd40_AvailabilityAlert_name')]",
+            "location": "global",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_stavmavaillogicapp38gd40_name'))]"
+            ],
+            "tags": {
+                "_deployed_by_amba": "True"
+            },
+            "properties": {
+                "description": "Metric Alert for Storage Account Availability",
+                "severity": 1,
+                "enabled": true,
+                "scopes": [
+                    "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_stavmavaillogicapp38gd40_name'))]"
+                ],
+                "evaluationFrequency": "PT5M",
+                "windowSize": "PT5M",
+                "criteria": {
+                    "allOf": [
+                        {
+                            "threshold": 90,
+                            "name": "Availability",
+                            "metricNamespace": "Microsoft.Storage/storageAccounts",
+                            "metricName": "Availability",
+                            "operator": "LessThan",
+                            "timeAggregation": "Average",
+                            "criterionType": "StaticThresholdCriterion"
+                        }
+                    ],
+                    "odata.type": "Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria"
+                },
+                "autoMitigate": true,
+                "actions": []
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices",
+            "apiVersion": "2024-01-01",
+            "name": "[concat(parameters('storageAccounts_stavmavaillogicapp38gd40_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_stavmavaillogicapp38gd40_name'))]"
+            ],
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "properties": {
+                "cors": {
+                    "corsRules": []
+                },
+                "deleteRetentionPolicy": {
+                    "allowPermanentDelete": false,
+                    "enabled": false
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/fileServices",
+            "apiVersion": "2024-01-01",
+            "name": "[concat(parameters('storageAccounts_stavmavaillogicapp38gd40_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_stavmavaillogicapp38gd40_name'))]"
+            ],
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "properties": {
+                "protocolSettings": {
+                    "smb": {}
+                },
+                "cors": {
+                    "corsRules": []
+                },
+                "shareDeleteRetentionPolicy": {
+                    "enabled": true,
+                    "days": 7
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/queueServices",
+            "apiVersion": "2024-01-01",
+            "name": "[concat(parameters('storageAccounts_stavmavaillogicapp38gd40_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_stavmavaillogicapp38gd40_name'))]"
+            ],
+            "properties": {
+                "cors": {
+                    "corsRules": []
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/tableServices",
+            "apiVersion": "2024-01-01",
+            "name": "[concat(parameters('storageAccounts_stavmavaillogicapp38gd40_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_stavmavaillogicapp38gd40_name'))]"
+            ],
+            "properties": {
+                "cors": {
+                    "corsRules": []
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2024-04-01",
+            "name": "[parameters('sites_la_vm_availability_monitor_name')]",
+            "location": "Sweden Central",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_asp_vm_availability_logicapp_name'))]"
+            ],
+            "tags": {
+                "Environment": "demo",
+                "ManagedBy": "terraform",
+                "Project": "vm-availability-monitoring"
+            },
+            "kind": "functionapp,workflowapp",
+            "identity": {
+                "type": "UserAssigned",
+                "userAssignedIdentities": {
+                    "/subscriptions/5f33a090-5b5b-43ff-a6dd-e912e60767ec/resourcegroups/rg-vm-availability-logicapp/providers/Microsoft.ManagedIdentity/userAssignedIdentities/mi-vm-availability-logicapp": {}
+                }
+            },
+            "properties": {
+                "enabled": true,
+                "hostNameSslStates": [
+                    {
+                        "name": "[concat(parameters('sites_la_vm_availability_monitor_name'), '.azurewebsites.net')]",
+                        "sslState": "Disabled",
+                        "hostType": "Standard"
+                    },
+                    {
+                        "name": "[concat(parameters('sites_la_vm_availability_monitor_name'), '.scm.azurewebsites.net')]",
+                        "sslState": "Disabled",
+                        "hostType": "Repository"
+                    }
+                ],
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_asp_vm_availability_logicapp_name'))]",
+                "reserved": false,
+                "isXenon": false,
+                "hyperV": false,
+                "dnsConfiguration": {},
+                "vnetRouteAllEnabled": false,
+                "vnetImagePullEnabled": false,
+                "vnetContentShareEnabled": false,
+                "siteConfig": {
+                    "numberOfWorkers": 1,
+                    "acrUseManagedIdentityCreds": false,
+                    "alwaysOn": false,
+                    "http20Enabled": false,
+                    "functionAppScaleLimit": 0,
+                    "minimumElasticInstanceCount": 1
+                },
+                "scmSiteAlsoStopped": false,
+                "clientAffinityEnabled": false,
+                "clientCertEnabled": false,
+                "clientCertMode": "Required",
+                "hostNamesDisabled": false,
+                "ipMode": "IPv4",
+                "vnetBackupRestoreEnabled": false,
+                "customDomainVerificationId": "2A92639FF2D7BEB41066937A016C2756F9D935BB4CECDBBE5FF832BCD1D311D3",
+                "containerSize": 1536,
+                "dailyMemoryTimeQuota": 0,
+                "httpsOnly": false,
+                "endToEndEncryptionEnabled": false,
+                "redundancyMode": "None",
+                "publicNetworkAccess": "Enabled",
+                "storageAccountRequired": false,
+                "keyVaultReferenceIdentity": "SystemAssigned"
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/basicPublishingCredentialsPolicies",
+            "apiVersion": "2024-04-01",
+            "name": "[concat(parameters('sites_la_vm_availability_monitor_name'), '/ftp')]",
+            "location": "Sweden Central",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_la_vm_availability_monitor_name'))]"
+            ],
+            "tags": {
+                "Environment": "demo",
+                "ManagedBy": "terraform",
+                "Project": "vm-availability-monitoring"
+            },
+            "properties": {
+                "allow": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/basicPublishingCredentialsPolicies",
+            "apiVersion": "2024-04-01",
+            "name": "[concat(parameters('sites_la_vm_availability_monitor_name'), '/scm')]",
+            "location": "Sweden Central",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_la_vm_availability_monitor_name'))]"
+            ],
+            "tags": {
+                "Environment": "demo",
+                "ManagedBy": "terraform",
+                "Project": "vm-availability-monitoring"
+            },
+            "properties": {
+                "allow": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/config",
+            "apiVersion": "2024-04-01",
+            "name": "[concat(parameters('sites_la_vm_availability_monitor_name'), '/web')]",
+            "location": "Sweden Central",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_la_vm_availability_monitor_name'))]"
+            ],
+            "tags": {
+                "Environment": "demo",
+                "ManagedBy": "terraform",
+                "Project": "vm-availability-monitoring"
+            },
+            "properties": {
+                "numberOfWorkers": 1,
+                "defaultDocuments": [
+                    "Default.htm",
+                    "Default.html",
+                    "Default.asp",
+                    "index.htm",
+                    "index.html",
+                    "iisstart.htm",
+                    "default.aspx",
+                    "index.php"
+                ],
+                "netFrameworkVersion": "v4.0",
+                "requestTracingEnabled": false,
+                "remoteDebuggingEnabled": false,
+                "httpLoggingEnabled": false,
+                "acrUseManagedIdentityCreds": false,
+                "logsDirectorySizeLimit": 35,
+                "detailedErrorLoggingEnabled": false,
+                "publishingUsername": "REDACTED",
+                "scmType": "None",
+                "use32BitWorkerProcess": true,
+                "webSocketsEnabled": false,
+                "alwaysOn": false,
+                "managedPipelineMode": "Integrated",
+                "virtualApplications": [
+                    {
+                        "virtualPath": "/",
+                        "physicalPath": "site\\wwwroot",
+                        "preloadEnabled": false
+                    }
+                ],
+                "loadBalancing": "LeastRequests",
+                "experiments": {
+                    "rampUpRules": []
+                },
+                "autoHealEnabled": false,
+                "vnetRouteAllEnabled": false,
+                "vnetPrivatePortsCount": 0,
+                "publicNetworkAccess": "Enabled",
+                "cors": {
+                    "supportCredentials": false
+                },
+                "localMySqlEnabled": false,
+                "xManagedServiceIdentityId": 47396,
+                "ipSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 2147483647,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 2147483647,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictionsUseMain": false,
+                "http20Enabled": false,
+                "minTlsVersion": "1.2",
+                "scmMinTlsVersion": "1.2",
+                "ftpsState": "FtpsOnly",
+                "preWarmedInstanceCount": 1,
+                "functionAppScaleLimit": 0,
+                "functionsRuntimeScaleMonitoringEnabled": false,
+                "minimumElasticInstanceCount": 1,
+                "azureStorageAccounts": {}
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/hostNameBindings",
+            "apiVersion": "2024-04-01",
+            "name": "[concat(parameters('sites_la_vm_availability_monitor_name'), '/', parameters('sites_la_vm_availability_monitor_name'), '.azurewebsites.net')]",
+            "location": "Sweden Central",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_la_vm_availability_monitor_name'))]"
+            ],
+            "properties": {
+                "siteName": "la-vm-availability-monitor",
+                "hostNameType": "Verified"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2024-01-01",
+            "name": "[concat(parameters('storageAccounts_stavmavaillogicapp38gd40_name'), '/default/azure-webjobs-hosts')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_stavmavaillogicapp38gd40_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_stavmavaillogicapp38gd40_name'))]"
+            ],
+            "properties": {
+                "immutableStorageWithVersioning": {
+                    "enabled": false
+                },
+                "defaultEncryptionScope": "$account-encryption-key",
+                "denyEncryptionScopeOverride": false,
+                "publicAccess": "None"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2024-01-01",
+            "name": "[concat(parameters('storageAccounts_stavmavaillogicapp38gd40_name'), '/default/azure-webjobs-secrets')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_stavmavaillogicapp38gd40_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_stavmavaillogicapp38gd40_name'))]"
+            ],
+            "properties": {
+                "immutableStorageWithVersioning": {
+                    "enabled": false
+                },
+                "defaultEncryptionScope": "$account-encryption-key",
+                "denyEncryptionScopeOverride": false,
+                "publicAccess": "None"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/fileServices/shares",
+            "apiVersion": "2024-01-01",
+            "name": "[concat(parameters('storageAccounts_stavmavaillogicapp38gd40_name'), '/default/la-vm-availability-monitor-content')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/fileServices', parameters('storageAccounts_stavmavaillogicapp38gd40_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_stavmavaillogicapp38gd40_name'))]"
+            ],
+            "properties": {
+                "accessTier": "TransactionOptimized",
+                "shareQuota": 102400,
+                "enabledProtocols": "SMB"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/queueServices/queues",
+            "apiVersion": "2024-01-01",
+            "name": "[concat(parameters('storageAccounts_stavmavaillogicapp38gd40_name'), '/default/flow2f9590d042a6383jobtriggers00')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/queueServices', parameters('storageAccounts_stavmavaillogicapp38gd40_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_stavmavaillogicapp38gd40_name'))]"
+            ],
+            "properties": {
+                "metadata": {}
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/tableServices/tables",
+            "apiVersion": "2024-01-01",
+            "name": "[concat(parameters('storageAccounts_stavmavaillogicapp38gd40_name'), '/default/flow2f9590d042a6383948c519a17253a0flows')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/tableServices', parameters('storageAccounts_stavmavaillogicapp38gd40_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_stavmavaillogicapp38gd40_name'))]"
+            ],
+            "properties": {}
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/tableServices/tables",
+            "apiVersion": "2024-01-01",
+            "name": "[concat(parameters('storageAccounts_stavmavaillogicapp38gd40_name'), '/default/flow2f9590d042a6383a36dc2df3ad11b8flows')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/tableServices', parameters('storageAccounts_stavmavaillogicapp38gd40_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_stavmavaillogicapp38gd40_name'))]"
+            ],
+            "properties": {}
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/tableServices/tables",
+            "apiVersion": "2024-01-01",
+            "name": "[concat(parameters('storageAccounts_stavmavaillogicapp38gd40_name'), '/default/flow2f9590d042a6383flowaccesskeys')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/tableServices', parameters('storageAccounts_stavmavaillogicapp38gd40_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_stavmavaillogicapp38gd40_name'))]"
+            ],
+            "properties": {}
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/tableServices/tables",
+            "apiVersion": "2024-01-01",
+            "name": "[concat(parameters('storageAccounts_stavmavaillogicapp38gd40_name'), '/default/flow2f9590d042a6383flowruntimecontext')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/tableServices', parameters('storageAccounts_stavmavaillogicapp38gd40_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_stavmavaillogicapp38gd40_name'))]"
+            ],
+            "properties": {}
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/tableServices/tables",
+            "apiVersion": "2024-01-01",
+            "name": "[concat(parameters('storageAccounts_stavmavaillogicapp38gd40_name'), '/default/flow2f9590d042a6383flows')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/tableServices', parameters('storageAccounts_stavmavaillogicapp38gd40_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_stavmavaillogicapp38gd40_name'))]"
+            ],
+            "properties": {}
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/tableServices/tables",
+            "apiVersion": "2024-01-01",
+            "name": "[concat(parameters('storageAccounts_stavmavaillogicapp38gd40_name'), '/default/flow2f9590d042a6383flowsubscriptions')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/tableServices', parameters('storageAccounts_stavmavaillogicapp38gd40_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_stavmavaillogicapp38gd40_name'))]"
+            ],
+            "properties": {}
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/tableServices/tables",
+            "apiVersion": "2024-01-01",
+            "name": "[concat(parameters('storageAccounts_stavmavaillogicapp38gd40_name'), '/default/flow2f9590d042a6383flowsubscriptionsummary')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/tableServices', parameters('storageAccounts_stavmavaillogicapp38gd40_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_stavmavaillogicapp38gd40_name'))]"
+            ],
+            "properties": {}
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/tableServices/tables",
+            "apiVersion": "2024-01-01",
+            "name": "[concat(parameters('storageAccounts_stavmavaillogicapp38gd40_name'), '/default/flow2f9590d042a6383jobdefinitions')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/tableServices', parameters('storageAccounts_stavmavaillogicapp38gd40_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_stavmavaillogicapp38gd40_name'))]"
+            ],
+            "properties": {}
+        }
+    ]
+}
