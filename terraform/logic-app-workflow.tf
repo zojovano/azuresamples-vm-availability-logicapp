@@ -1,16 +1,7 @@
 # Logic App Standard workflow files deployment
 
-# Local values for workflow configuration
-locals {
-  # Read and prepare the workflow definition from logicapp.json
-  workflow_definition = jsondecode(file("${path.root}/../logicapp.json"))
-
-  # Extract just the definition part for Logic App Standard format
-  standard_workflow = {
-    definition = local.workflow_definition.definition
-    kind       = local.workflow_definition.kind
-  }
-}
+# Note: The workflow definition deployment is now handled via Azure CLI in GitHub Actions
+# The logicapp.json file contains the workflow definition that gets deployed via CLI
 
 # Create host.json for Logic App Standard
 resource "azapi_resource_action" "upload_host_json" {
@@ -76,18 +67,5 @@ resource "azapi_resource_action" "upload_connections_json" {
   ]
 }
 
-# Create the workflow folder and upload workflow.json
-resource "azapi_resource_action" "upload_workflow_json" {
-  type                   = "Microsoft.Web/sites@2022-03-01"
-  resource_id            = azurerm_logic_app_standard.main.id
-  action                 = "hostruntime/admin/vfs/site/wwwroot/vm-monitor/workflow.json"
-  method                 = "PUT"
-  response_export_values = ["*"]
-
-  body = jsonencode(local.standard_workflow)
-
-  depends_on = [
-    azapi_resource_action.upload_host_json,
-    azapi_resource_action.upload_connections_json
-  ]
-}
+# Note: Logic App workflow deployment is now handled via Azure CLI in GitHub Actions
+# See .github/workflows/deploy.yml for the workflow deployment step
