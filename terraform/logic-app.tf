@@ -100,32 +100,7 @@ resource "azurerm_logic_app_standard" "main" {
     "OFFICE365_MANAGED_API_ID"      = azurerm_api_connection.office365.managed_api_id
   }
 
-  site_config {
-    always_on                   = false
-    ftps_state                  = "FtpsOnly"
-    http2_enabled               = false
-    scm_use_main_ip_restriction = false
-    pre_warmed_instance_count   = 1
-    elastic_instance_minimum    = 1
 
-    cors {
-      allowed_origins     = []
-      support_credentials = false
-    }
-
-    ip_restriction {
-      action     = "Allow"
-      name       = "Allow all"
-      priority   = 2147483647
-      ip_address = "0.0.0.0/0"
-    }
-
-    scm_ip_restriction {
-      action     = "Allow"
-      name       = "Allow all"
-      priority   = 2147483647
-      ip_address = "0.0.0.0/0"
-    }
   }
 
   tags = var.tags
