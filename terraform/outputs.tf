@@ -24,6 +24,12 @@ output "logic_app_workflow_callback_url" {
   sensitive   = false
 }
 
+output "workflow_trigger_url" {
+  description = "Base URL for the vm-monitor workflow (full callback URL needs to be retrieved from Azure portal or CLI)"
+  value       = "https://${azurerm_logic_app_standard.main.default_hostname}/runtime/webhooks/workflow/api/management/workflows/vm-monitor/triggers/When_a_HTTP_request_is_received/listCallbackUrl?api-version=2020-05-01-preview"
+  sensitive   = false
+}
+
 output "storage_account_name" {
   description = "Storage account name for Logic App Standard"
   value       = azurerm_storage_account.logic_app.name
