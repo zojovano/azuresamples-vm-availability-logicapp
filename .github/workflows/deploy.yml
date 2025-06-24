@@ -70,6 +70,11 @@ jobs:
 
     - name: Terraform Init
       id: init
+      env:
+        ARM_STORAGE_ACCOUNT_NAME: ${{ secrets.STATE_STORAGE_ACCOUNT }}
+        ARM_CONTAINER_NAME: ${{ secrets.STATE_CONTAINER }}
+        ARM_KEY: terraform.tfstate
+        ARM_RESOURCE_GROUP_NAME: ${{ secrets.STATE_RESOURCE_GROUP }}
       run: terraform init
 
     - name: Terraform Validate
@@ -79,6 +84,11 @@ jobs:
     - name: Terraform Plan
       id: plan
       if: github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'plan')
+      env:
+        ARM_STORAGE_ACCOUNT_NAME: ${{ secrets.STATE_STORAGE_ACCOUNT }}
+        ARM_CONTAINER_NAME: ${{ secrets.STATE_CONTAINER }}
+        ARM_KEY: terraform.tfstate
+        ARM_RESOURCE_GROUP_NAME: ${{ secrets.STATE_RESOURCE_GROUP }}
       run: terraform plan -no-color -input=false
       continue-on-error: true
 
@@ -118,14 +128,29 @@ jobs:
 
     - name: Terraform Apply
       if: github.ref == 'refs/heads/main' && github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply')
+      env:
+        ARM_STORAGE_ACCOUNT_NAME: ${{ secrets.STATE_STORAGE_ACCOUNT }}
+        ARM_CONTAINER_NAME: ${{ secrets.STATE_CONTAINER }}
+        ARM_KEY: terraform.tfstate
+        ARM_RESOURCE_GROUP_NAME: ${{ secrets.STATE_RESOURCE_GROUP }}
       run: terraform apply -auto-approve -input=false
 
     - name: Terraform Destroy
       if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'destroy'
+      env:
+        ARM_STORAGE_ACCOUNT_NAME: ${{ secrets.STATE_STORAGE_ACCOUNT }}
+        ARM_CONTAINER_NAME: ${{ secrets.STATE_CONTAINER }}
+        ARM_KEY: terraform.tfstate
+        ARM_RESOURCE_GROUP_NAME: ${{ secrets.STATE_RESOURCE_GROUP }}
       run: terraform destroy -auto-approve -input=false
 
     - name: Output Logic App Details
       if: (github.ref == 'refs/heads/main' && github.event_name == 'push') || (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply')
+      env:
+        ARM_STORAGE_ACCOUNT_NAME: ${{ secrets.STATE_STORAGE_ACCOUNT }}
+        ARM_CONTAINER_NAME: ${{ secrets.STATE_CONTAINER }}
+        ARM_KEY: terraform.tfstate
+        ARM_RESOURCE_GROUP_NAME: ${{ secrets.STATE_RESOURCE_GROUP }}
       run: |
         echo "Logic App Standard deployed successfully!"
         echo "Resource Group: $(terraform output -raw resource_group_name)"
