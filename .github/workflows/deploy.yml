@@ -169,3 +169,4 @@ jobs:
         echo "Managed Identity Principal ID: $(terraform output -raw managed_identity_principal_id)"
         echo "Storage Account Name: $(terraform output -raw storage_account_name)"
         echo "App Service Plan Name: $(terraform output -raw app_service_plan_name)"
+        echo "Workflow Trigger URL: $(terraform output -raw workflow_trigger_url)"
