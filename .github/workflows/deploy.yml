@@ -161,10 +161,9 @@ jobs:
         echo "Resource Group: $RESOURCE_GROUP"
         echo "Logic App Name: $LOGIC_APP_NAME"
         
-        az logicapp workflow create \
+        az logic workflow create \
           --resource-group "$RESOURCE_GROUP" \
-          --logic-app-name "$LOGIC_APP_NAME" \
-          --name logicappalert \
+          --name "$LOGIC_APP_NAME" \
           --definition @./terraform/workflows/logicappalert/logicapp.json
 
     - name: Terraform Destroy
