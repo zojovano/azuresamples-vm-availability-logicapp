@@ -11,15 +11,6 @@ terraform {
     }
   }
 
-  backend "azurerm" {
-    # Backend configuration is provided via environment variables:
-    # ARM_ACCESS_KEY (from STORAGE-ACCESS-KEY secret) for storage authentication
-    # STATE_RESOURCE_GROUP -> resource_group_name
-    # STATE_STORAGE_ACCOUNT -> storage_account_name  
-    # STATE_CONTAINER -> container_name
-    # key is set to a fixed value for this project
-    key = "terraform.tfstate"
-  }
 }
 
 provider "azurerm" {
