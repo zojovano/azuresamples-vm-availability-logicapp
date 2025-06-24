@@ -1,26 +1,30 @@
-# Logic App Standard workflow files deployment
+# Logic App Standard workflow files deployment via zip package
 
-# Local values for workflow configuration
+# Create a data source for the zip file with dynamic content
 locals {
-  # Read and prepare the workflow definition from logicapp.json
-  workflow_definition = jsondecode(file("${path.root}/../logicapp.json"))
+  # Read and prepare the workflow definition from workflow file
+  workflow_definition = jsondecode(file("${path.module}/workflows/logicappalert/logicapp.json"))
 
-  # Extract just the definition part for Logic App Standard format
-  standard_workflow = {
-    definition = local.workflow_definition.definition
-    kind       = local.workflow_definition.kind
+  # Prepare connections.json content with dynamic values
+  connections_content = {
+    managedApiConnections = {
+      office365 = {
+        api = {
+          id = "/subscriptions/${var.subscription_id}/providers/Microsoft.Web/locations/${azurerm_resource_group.main.location}/managedApis/office365"
+        }
+        connection = {
+          id = azurerm_api_connection.office365.id
+        }
+        connectionRuntimeUrl = "https://${var.logic_app_name}.azurewebsites.net"
+        authentication = {
+          type = "ManagedServiceIdentity"
+        }
+      }
+    }
   }
-}
 
-# Create host.json for Logic App Standard
-resource "azapi_resource_action" "upload_host_json" {
-  type                   = "Microsoft.Web/sites@2022-03-01"
-  resource_id            = azurerm_logic_app_standard.main.id
-  action                 = "hostruntime/admin/vfs/site/wwwroot/host.json"
-  method                 = "PUT"
-  response_export_values = ["*"]
-
-  body = jsonencode({
+  # Host.json configuration
+  host_content = {
     version         = "2.0"
     functionTimeout = "00:05:00"
     healthMonitor = {
@@ -40,54 +44,50 @@ resource "azapi_resource_action" "upload_host_json" {
       id      = "Microsoft.Azure.Functions.ExtensionBundle.Workflows"
       version = "[1.*, 2.0.0)"
     }
-  })
-
-  depends_on = [azurerm_logic_app_standard.main]
+  }
 }
 
-# Create connections.json for Office 365 connection
-resource "azapi_resource_action" "upload_connections_json" {
-  type                   = "Microsoft.Web/sites@2022-03-01"
-  resource_id            = azurerm_logic_app_standard.main.id
-  action                 = "hostruntime/admin/vfs/site/wwwroot/connections.json"
-  method                 = "PUT"
-  response_export_values = ["*"]
+# Create individual files for the Logic App
+resource "local_file" "host_json" {
+  content  = jsonencode(local.host_content)
+  filename = "${path.module}/temp_workflows/host.json"
+}
 
-  body = jsonencode({
-    managedApiConnections = {
-      office365 = {
-        api = {
-          id = "/subscriptions/${var.subscription_id}/providers/Microsoft.Web/locations/${azurerm_resource_group.main.location}/managedApis/office365"
-        }
-        connection = {
-          id = azurerm_api_connection.office365.id
-        }
-        connectionRuntimeUrl = "https://${azurerm_logic_app_standard.main.default_hostname}"
-        authentication = {
-          type = "ManagedServiceIdentity"
-        }
-      }
-    }
-  })
+resource "local_file" "connections_json" {
+  content  = jsonencode(local.connections_content)
+  filename = "${path.module}/temp_workflows/connections.json"
+}
 
+resource "local_file" "workflow_json" {
+  content  = jsonencode(local.workflow_definition)
+  filename = "${path.module}/temp_workflows/vm-monitor/workflow.json"
+}
+
+# Create the zip file with all workflow files
+data "archive_file" "workflows" {
+  type        = "zip"
+  output_path = "${path.module}/workflows.zip"
+  
+  source_dir = "${path.module}/temp_workflows"
+  
   depends_on = [
-    azurerm_logic_app_standard.main,
-    azurerm_api_connection.office365
+    local_file.host_json,
+    local_file.connections_json,
+    local_file.workflow_json
   ]
 }
 
-# Create the workflow folder and upload workflow.json
-resource "azapi_resource_action" "upload_workflow_json" {
-  type                   = "Microsoft.Web/sites@2022-03-01"
-  resource_id            = azurerm_logic_app_standard.main.id
-  action                 = "hostruntime/admin/vfs/site/wwwroot/vm-monitor/workflow.json"
-  method                 = "PUT"
-  response_export_values = ["*"]
-
-  body = jsonencode(local.standard_workflow)
+# Deploy the workflow zip file to Logic App Standard
+resource "azapi_resource_action" "deploy_workflows_zip" {
+  type        = "Microsoft.Web/sites@2022-03-01"
+  resource_id = azurerm_logic_app_standard.main.id
+  action      = "extensions/zipdeploy"
+  method      = "POST"
+  
+  body = filebase64(data.archive_file.workflows.output_path)
 
   depends_on = [
-    azapi_resource_action.upload_host_json,
-    azapi_resource_action.upload_connections_json
+    azurerm_logic_app_standard.main,
+    data.archive_file.workflows
   ]
 }

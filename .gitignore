@@ -47,3 +47,6 @@ ehthumbs.db
 Thumbs.dbterraform.zip
 .terraform/
 .terraform.lock.hcl
+
+# Temporary workflow files generated during deployment
+terraform/temp_workflows/
