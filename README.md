@@ -115,7 +115,7 @@ After successful deployment, the workflow outputs:
 - Decide based on the status whether to send e-mail notification or ignore the alert
 
 > [!NOTE]
-> Logic App Workflow code is available in the [logicapp.json](docs/logicapp.json)
+> Logic App Workflow code is available in the [logicapp.json](terraform/workflows/logicappalert/logicapp.json)
 
 ![alt text](docs/image-2.png)
 
