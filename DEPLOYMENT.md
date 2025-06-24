@@ -149,7 +149,7 @@ You can customize the deployment by modifying variables in `terraform/variables.
 
 Key variables:
 - `resource_group_name`: Name of the resource group (default: "rg-vm-availability-logicapp")
-- `location`: Azure region (default: "East US")
+- `location`: Azure region (default: "Sweden Central")
 - `logic_app_name`: Name of the Logic App (default: "la-vm-availability-monitor")
 - `notification_email`: Email for notifications (set via GitHub secret)
 
