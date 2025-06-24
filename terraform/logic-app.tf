@@ -101,10 +101,6 @@ resource "azurerm_logic_app_standard" "main" {
   }
 
 
-  }
-
-  tags = var.tags
-
   depends_on = [
     azurerm_user_assigned_identity.logic_app,
     azurerm_api_connection.office365
