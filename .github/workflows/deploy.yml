@@ -168,7 +168,7 @@ jobs:
         az logic workflow create \
           --resource-group "$RESOURCE_GROUP" \
           --name "$LOGIC_APP_NAME" \
-          --definition ./terraform/workflows/logicappalert/logicapp.json \
+          --definition "./terraform/workflows/logicappalert/logicapp.json" \
           --location "Sweden Central"
 
     - name: Terraform Destroy
