@@ -39,3 +39,13 @@ output "app_service_plan_name" {
   description = "WorkflowStandard Plan name for Logic App Standard"
   value       = azurerm_service_plan.logic_app.name
 }
+
+output "storage_availability_alert_name" {
+  description = "Name of the storage availability metric alert"
+  value       = azurerm_monitor_metric_alert.storage_availability.name
+}
+
+output "office365_connection_name" {
+  description = "Name of the Office 365 API connection"
+  value       = azurerm_api_connection.office365.name
+}

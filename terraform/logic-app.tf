@@ -31,6 +31,12 @@ resource "azurerm_service_plan" "logic_app" {
   os_type             = "Windows"
   sku_name            = "WS1"
 
+  # Additional settings to match ARM template
+  per_site_scaling_enabled     = false
+  zone_balancing_enabled       = false
+  worker_count                 = 1
+  maximum_elastic_worker_count = 1
+
   tags = var.tags
 }
 
@@ -41,6 +47,18 @@ resource "azurerm_storage_account" "logic_app" {
   location                 = azurerm_resource_group.main.location
   account_tier             = "Standard"
   account_replication_type = "LRS"
+  account_kind             = "StorageV2"
+  access_tier              = "Hot"
+
+  min_tls_version                 = "TLS1_2"
+  allow_nested_items_to_be_public = true
+  shared_access_key_enabled       = true
+  https_traffic_only_enabled      = true
+
+  network_rules {
+    default_action = "Allow"
+    bypass         = ["AzureServices"]
+  }
 
   tags = var.tags
 }
@@ -61,6 +79,8 @@ resource "azurerm_logic_app_standard" "main" {
   storage_account_name       = azurerm_storage_account.logic_app.name
   storage_account_access_key = azurerm_storage_account.logic_app.primary_access_key
   version                    = "~4"
+  https_only                 = false
+  client_affinity_enabled    = false
 
   identity {
     type         = "UserAssigned"
@@ -81,7 +101,31 @@ resource "azurerm_logic_app_standard" "main" {
   }
 
   site_config {
-    always_on = false
+    always_on                   = false
+    ftps_state                  = "FtpsOnly"
+    http2_enabled               = false
+    scm_use_main_ip_restriction = false
+    pre_warmed_instance_count   = 1
+    elastic_instance_minimum    = 1
+
+    cors {
+      allowed_origins     = []
+      support_credentials = false
+    }
+
+    ip_restriction {
+      action     = "Allow"
+      name       = "Allow all"
+      priority   = 2147483647
+      ip_address = "0.0.0.0/0"
+    }
+
+    scm_ip_restriction {
+      action     = "Allow"
+      name       = "Allow all"
+      priority   = 2147483647
+      ip_address = "0.0.0.0/0"
+    }
   }
 
   tags = var.tags
