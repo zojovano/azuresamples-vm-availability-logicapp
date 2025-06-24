@@ -34,6 +34,9 @@ This repository includes a GitHub Action workflow that automatically deploys the
    - `AZURE_TENANT_ID`: Azure tenant ID (539d8bb1-bbd5-4f9d-836d-223c3e6d1e43)
    - `AZURE_TARGET_SUBSCRIPTION_ID`: Subscription ID to monitor for VM availability (can be the same as AZURE_SUBSCRIPTION_ID)
    - `NOTIFICATION_EMAIL`: Email address for alert notifications
+   - `STATE_STORAGE_ACCOUNT`: Azure Storage account name for Terraform state
+   - `STATE_CONTAINER`: Azure Storage container name for Terraform state
+   - `STATE_RESOURCE_GROUP`: Azure Resource Group containing the storage account
 
    **Note**: With federated identity, you no longer need `AZURE_CLIENT_SECRET`, enhancing security.
 
