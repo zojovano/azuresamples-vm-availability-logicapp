@@ -44,4 +44,6 @@ terraform.rc
 .Spotlight-V100
 .Trashes
 ehthumbs.db
-Thumbs.db
+Thumbs.dbterraform.zip
+.terraform/
+.terraform.lock.hcl

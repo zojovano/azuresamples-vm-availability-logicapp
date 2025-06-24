@@ -10,7 +10,7 @@ output "logic_app_name" {
 
 output "logic_app_id" {
   description = "ID of the created Logic App"
-  value       = jsondecode(azurerm_resource_group_template_deployment.logic_app.output_content).logicAppId.value
+  value       = azurerm_logic_app_standard.main.id
 }
 
 output "managed_identity_principal_id" {
@@ -19,12 +19,17 @@ output "managed_identity_principal_id" {
 }
 
 output "logic_app_workflow_callback_url" {
-  description = "HTTP trigger callback URL for the Logic App workflow"
-  value       = jsondecode(azurerm_resource_group_template_deployment.logic_app.output_content).callbackUrl.value
-  sensitive   = true
+  description = "Default hostname for the Logic App Standard (workflow URLs need to be configured within the Logic App)"
+  value       = "https://${azurerm_logic_app_standard.main.default_hostname}"
+  sensitive   = false
 }
 
 output "storage_account_name" {
-  description = "Storage account not needed for consumption Logic App"
-  value       = "N/A - Consumption Logic App"
+  description = "Storage account name for Logic App Standard"
+  value       = azurerm_storage_account.logic_app.name
+}
+
+output "app_service_plan_name" {
+  description = "App Service Plan name for Logic App Standard"
+  value       = azurerm_service_plan.logic_app.name
 }
