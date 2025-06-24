@@ -154,6 +154,8 @@ jobs:
         ARM_RESOURCE_GROUP_NAME: ${{ secrets.STATE_RESOURCE_GROUP }}
       run: |
         # Get the resource group and logic app names from Terraform outputs
+        mkdir -p ./terraform/workflows/logicappalert
+        echo '{ /* your logic app JSON here */ }' > ./terraform/workflows/logicappalert/logicapp.json
         RESOURCE_GROUP=$(terraform output -raw resource_group_name)
         LOGIC_APP_NAME=$(terraform output -raw logic_app_name)
         
