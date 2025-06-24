@@ -144,6 +144,30 @@ jobs:
         ARM_RESOURCE_GROUP_NAME: ${{ secrets.STATE_RESOURCE_GROUP }}
       run: terraform apply -auto-approve -input=false
 
+    - name: Deploy Logic App Workflow via Azure CLI
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply')
+      env:
+        ARM_ACCESS_KEY: ${{ secrets.STORAGE-ACCESS-KEY }}
+        ARM_STORAGE_ACCOUNT_NAME: ${{ secrets.STATE_STORAGE_ACCOUNT }}
+        ARM_CONTAINER_NAME: ${{ secrets.STATE_CONTAINER }}
+        ARM_KEY: terraform.tfstate
+        ARM_RESOURCE_GROUP_NAME: ${{ secrets.STATE_RESOURCE_GROUP }}
+      run: |
+        # Get the resource group and logic app names from Terraform outputs
+        RESOURCE_GROUP=$(terraform output -raw resource_group_name)
+        LOGIC_APP_NAME=$(terraform output -raw logic_app_name)
+        
+        echo "Deploying Logic App Workflow..."
+        echo "Resource Group: $RESOURCE_GROUP"
+        echo "Logic App Name: $LOGIC_APP_NAME"
+        
+        az login --identity
+        az logicapp workflow create \
+          --resource-group "$RESOURCE_GROUP" \
+          --logic-app-name "$LOGIC_APP_NAME" \
+          --name logicappalert \
+          --definition @./terraform/workflows/logicappalert/logicapp.json
+
     - name: Terraform Destroy
       if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'destroy'
       env:
