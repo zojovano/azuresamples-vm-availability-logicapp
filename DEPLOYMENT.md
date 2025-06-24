@@ -84,6 +84,7 @@ Configure these secrets in your GitHub repository (Settings → Secrets and vari
 | `STATE_STORAGE_ACCOUNT` | Azure Storage account name for Terraform state | `mystorageaccount` |
 | `STATE_CONTAINER` | Azure Storage container name for Terraform state | `tfstate` |
 | `STATE_RESOURCE_GROUP` | Azure Resource Group containing the storage account | `rg-terraform-state` |
+| `STORAGE-ACCESS-KEY` | Storage account access key for Terraform state | `ZmFrZWFjY2Vzc2tleQ==` |
 
 **Note**: With federated identity, you no longer need to store the `AZURE_CLIENT_SECRET` as a GitHub secret, enhancing security by eliminating long-lived credentials.
 
@@ -188,6 +189,7 @@ The workflow uses Azure Storage as a remote backend for Terraform state. This re
 - `STATE_STORAGE_ACCOUNT`: Azure Storage account name for Terraform state
 - `STATE_CONTAINER`: Azure Storage container name for Terraform state  
 - `STATE_RESOURCE_GROUP`: Azure Resource Group containing the storage account
+- `STORAGE-ACCESS-KEY`: Storage account access key for authenticating to the storage backend
 
 **Benefits of remote state:**
 - State file is stored securely in Azure Storage

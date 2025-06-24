@@ -37,6 +37,7 @@ This repository includes a GitHub Action workflow that automatically deploys the
    - `STATE_STORAGE_ACCOUNT`: Azure Storage account name for Terraform state
    - `STATE_CONTAINER`: Azure Storage container name for Terraform state
    - `STATE_RESOURCE_GROUP`: Azure Resource Group containing the storage account
+   - `STORAGE-ACCESS-KEY`: Storage account access key for Terraform state
 
    **Note**: With federated identity, you no longer need `AZURE_CLIENT_SECRET`, enhancing security.
 
