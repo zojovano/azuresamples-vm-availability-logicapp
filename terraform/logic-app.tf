@@ -29,7 +29,7 @@ resource "azurerm_service_plan" "logic_app" {
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
   os_type             = "Windows"
-  sku_name            = "WS1"
+  sku_name            = "S1"
 
   tags = var.tags
 }
