@@ -81,6 +81,7 @@ resource "azurerm_logic_app_standard" "main" {
   version                    = "~4"
   https_only                 = false
   client_affinity_enabled    = false
+  workflow_json              = file("${path.module}/workflows/logicappalert/logicapp.json")
 
   identity {
     type         = "UserAssigned"
