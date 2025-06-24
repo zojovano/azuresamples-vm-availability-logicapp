@@ -94,6 +94,15 @@ After deployment, you'll need to authorize the Office 365 connection:
 4. Click "Authorize" and sign in with your Office 365 account
 5. Save the connection
 
+### 4. Terraform Backend Configuration
+
+**Required**: Configure Azure Storage backend for Terraform state persistence:
+
+1. Create an Azure Storage Account for Terraform state (see [Terraform State](#terraform-state) section for details)
+2. Configure the backend during first deployment or when initializing Terraform locally
+
+**Note**: Without remote backend configuration, GitHub Actions will fail due to missing state persistence between workflow runs.
+
 ## Deployment Workflows
 
 ### Automatic Deployment
@@ -181,10 +190,39 @@ View detailed logs in GitHub Actions:
 
 ### Terraform State
 
-The workflow uses local state. For production use, consider:
-- Configuring remote state storage (Azure Storage Account)
-- Adding state locking
-- Implementing proper backup strategies
+**Important**: This deployment uses remote state storage with Azure Storage for reliable GitHub Actions execution.
+
+#### Backend Configuration Required
+
+Before deploying, you must configure an Azure Storage Account for Terraform state:
+
+1. **Create a storage account and container for Terraform state:**
+   ```bash
+   # Create resource group for state storage
+   az group create --name "rg-terraform-state" --location "East US"
+   
+   # Create storage account
+   az storage account create \
+     --name "YOUR_STATE_STORAGE_ACCOUNT" \
+     --resource-group "rg-terraform-state" \
+     --location "East US" \
+     --sku "Standard_LRS"
+   
+   # Create container
+   az storage container create \
+     --name "tfstate" \
+     --account-name "YOUR_STATE_STORAGE_ACCOUNT"
+   ```
+
+2. **Configure backend during terraform init:**
+   ```bash
+   terraform init \
+     -backend-config="resource_group_name=rg-terraform-state" \
+     -backend-config="storage_account_name=YOUR_STATE_STORAGE_ACCOUNT" \
+     -backend-config="container_name=tfstate"
+   ```
+
+3. **For GitHub Actions**, ensure your App Registration service principal has access to the state storage account.
 
 ## Security Considerations
 
