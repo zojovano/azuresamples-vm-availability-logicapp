@@ -162,11 +162,14 @@ jobs:
         echo "Deploying Logic App Workflow..."
         echo "Resource Group: $RESOURCE_GROUP"
         echo "Logic App Name: $LOGIC_APP_NAME"
+
+        az config set extension.dynamic_install_allow_preview=true
         
         az logic workflow create \
           --resource-group "$RESOURCE_GROUP" \
           --name "$LOGIC_APP_NAME" \
-          --definition '@./terraform/workflows/logicappalert/logicapp.json'
+          --definition "./terraform/workflows/logicappalert/logicapp.json" \
+          --location "Sweden Central"
 
     - name: Terraform Destroy
       if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'destroy'
