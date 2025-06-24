@@ -18,7 +18,7 @@ variable "resource_group_name" {
 variable "location" {
   description = "Azure region for resources"
   type        = string
-  default     = "East US"
+  default     = "Sweden Central"
 }
 
 variable "logic_app_name" {

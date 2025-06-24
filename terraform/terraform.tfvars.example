@@ -7,7 +7,7 @@ tenant_id       = "539d8bb1-bbd5-4f9d-836d-223c3e6d1e43"
 
 # Resource Configuration
 resource_group_name = "rg-vm-availability-logicapp"
-location            = "East US"
+location            = "Sweden Central"
 logic_app_name      = "la-vm-availability-monitor"
 
 # Monitoring Configuration

@@ -74,7 +74,7 @@ subscription_id        = "your-subscription-id"
 target_subscription_id = "subscription-to-monitor"
 notification_email     = "your-email@domain.com"
 resource_group_name    = "rg-vm-availability-logicapp"
-location              = "East US"
+location              = "Sweden Central"
 ```
 
 ### Workflow Outputs
