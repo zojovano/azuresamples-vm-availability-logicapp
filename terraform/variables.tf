@@ -36,7 +36,7 @@ variable "managed_identity_name" {
 variable "office365_connection_name" {
   description = "Name of the Office 365 connection"
   type        = string
-  default     = "office365-connection"
+  default     = "office365"
 }
 
 variable "app_service_plan_name" {
